@@ -22,7 +22,7 @@ def analyze_trading(message):
         # Gemini API দিয়ে ট্রেডিং এনালাইসিস
         prompt = f"You are an expert trading analyst. Analyze this query and give clear trading insight or signals: {message.text}"
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-1.5-flash",
             contents=prompt
         )
         bot.reply_to(message, response.text)
@@ -31,5 +31,5 @@ def analyze_trading(message):
 
 if __name__ == "__main__":
     print("Bot is running...")
-    bot.remove_webhook()  # আগের ওয়েভহুক এরর দূর করার জন্য
+    bot.remove_webhook()
     bot.infinity_polling()
