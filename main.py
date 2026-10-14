@@ -31,4 +31,5 @@ def analyze_trading(message):
 
 if __name__ == "__main__":
     print("Bot is running...")
+    bot.remove_webhook()  # আগের ওয়েভহুক এরর দূর করার জন্য
     bot.infinity_polling()
