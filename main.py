@@ -23,7 +23,7 @@ def analyze_text(message):
     try:
         prompt = f"You are an expert trading analyst. Analyze this query and give clear trading insight or signals: {message.text}"
         response = client.models.generate_content(
-            model="gemini-3.8-flash",
+            model="gemini-1.5-flash",
             contents=prompt
         )
         bot.reply_to(message, response.text)
@@ -44,7 +44,7 @@ def analyze_photo(message):
         
         # Gemini API-তে ছবি ও প্রম্পট পাঠানো
         response = client.models.generate_content(
-            model="gemini-3.8-flash",
+            model="gemini-1.5-flash",
             contents=[
                 types.Part.from_bytes(
                     data=downloaded_file,
