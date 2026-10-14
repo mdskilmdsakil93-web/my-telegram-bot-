@@ -1,6 +1,7 @@
 import os
 import telebot
 from google import genai
+from google.genai import types
 
 # Render Environment Variables থেকে কী নেওয়া হচ্ছে
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
@@ -14,12 +15,12 @@ bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, "👋 ট্রেডিং সিগন্যাল বটে আপনাকে স্বাগতম! আপনার ট্রেডিং প্রশ্ন বা ডেটা পাঠান, Gemini AI অ্যানালাইসিস করে দেবে।")
+    bot.reply_to(message, "👋 ট্রেডিং সিগন্যাল বটে আপনাকে স্বাগতম! ট্রেডিং সংক্রান্ত প্রশ্ন অথবা চার্টের ছবি পাঠান, Gemini AI এনালাইসিস করে দেবে।")
 
-@bot.message_handler(func=lambda message: True)
-def analyze_trading(message):
+# ১. টেক্সট মেসেজ প্রসেস করার জন্য
+@bot.message_handler(content_types=['text'])
+def analyze_text(message):
     try:
-        # Gemini API দিয়ে ট্রেডিং এনালাইসিস
         prompt = f"You are an expert trading analyst. Analyze this query and give clear trading insight or signals: {message.text}"
         response = client.models.generate_content(
             model="gemini-1.5-flash",
@@ -28,6 +29,33 @@ def analyze_trading(message):
         bot.reply_to(message, response.text)
     except Exception as e:
         bot.reply_to(message, f"একটি ত্রুটি ঘটেছে: {str(e)}")
+
+# ২. ট্রেডিং চার্টের ছবি প্রসেস করার জন্য
+@bot.message_handler(content_types=['photo'])
+def analyze_photo(message):
+    try:
+        bot.reply_to(message, "🔍 আপনার চার্টের ছবি অ্যানালাইসিস করা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...")
+        
+        # সবচেয়ে ভালো কোয়ালিটির ছবিটি নেওয়া হচ্ছে
+        file_info = bot.get_file(message.photo[-1].file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+
+        prompt = "You are an expert trading analyst. Analyze this trading chart image carefully. Identify current trend, support/resistance levels, indicators (like EMA, RSI if visible), and give clear signal or market insight in Bengali."
+        
+        # Gemini API-তে ছবি ও প্রম্পট পাঠানো
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=[
+                types.Part.from_bytes(
+                    data=downloaded_file,
+                    mime_type="image/jpeg"
+                ),
+                prompt
+            ]
+        )
+        bot.reply_to(message, response.text)
+    except Exception as e:
+        bot.reply_to(message, f"ছবি বিশ্লেষণ করতে সমস্যা হয়েছে: {str(e)}")
 
 if __name__ == "__main__":
     print("Bot is running...")
